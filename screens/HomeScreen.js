@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { Entypo, Feather } from "@expo/vector-icons";
 import {
 	View,
@@ -11,8 +11,31 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import Categories from "../components/Categories";
 import FeaturedRow from "../components/FeaturedRow";
+import sanityClient from "../sanity";
+
 export const HomeScreen = () => {
 	const navigation = useNavigation();
+	const [featuredCategories, setFeaturedCategories] = useState([]);
+
+	useEffect(() => {
+		sanityClient
+			.fetch(
+				`*[_type == "featured"]{
+				...,
+				restaurants[]->{
+					...,
+					dishes[]->,
+					type-> {
+						name
+					}
+				}
+			}`,
+			)
+			.then((data) => {
+				setFeaturedCategories(data);
+			});
+	}),
+		[featuredCategories];
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			headerShown: false,
@@ -55,25 +78,14 @@ export const HomeScreen = () => {
 				}}>
 				{/* Category */}
 				<Categories />
-				{/* Featured rows */}
-				{/* Featured */}
-				<FeaturedRow
-					id="12"
-					title="Featured"
-					description="Discover the best restaurants in your area"
-				/>
-				{/* Tasty discount */}
-				<FeaturedRow
-					id="123"
-					title="Tasty Discount"
-					description="Everyone's favorite food is on sale"
-				/>
-				{/* Offers near you */}
-				<FeaturedRow
-					id="1223"
-					title="Offers near you"
-					description="Discover the best restaurants in your area"
-				/>
+				{featuredCategories.map((featured) => (
+					<FeaturedRow
+						key={featured._id}
+						id={featured._id}
+						title={featured.name}
+						description={featured.short_description}
+					/>
+				))}
 			</ScrollView>
 		</SafeAreaView>
 	);

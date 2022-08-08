@@ -1,9 +1,34 @@
 import { Feather } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
+import sanityClient from "../sanity";
 import RestaurantCard from "./RestaurantCard";
 
 const FeaturedRow = ({ id, title, description }) => {
+	const [restaurants, setRestaurants] = useState([]);
+	useEffect(() => {
+		sanityClient
+			.fetch(
+				`
+			*[_type == "featured" && _id == $id] {
+				...,
+				restaurants[]->{
+					...,
+					dishes[]->,
+					type-> {
+						name
+					}
+				},
+			}[0]
+		`,
+				{ id },
+			)
+			.then((data) => {
+				setRestaurants(data?.restaurants);
+			});
+	}),
+		[id];
+
 	return (
 		<View>
 			<View className="mt-4 flex-row items-center justify-between px-4">
@@ -19,78 +44,21 @@ const FeaturedRow = ({ id, title, description }) => {
 				showsHorizontalScrollIndicator={false}
 				className="pt-4">
 				{/* Restaurant card */}
-				<RestaurantCard
-					id="343"
-					imgUrl="https://links.papareact.com/gn7"
-					title="testing"
-					rating={4.0}
-					genre="Italian"
-					address="123 Main St"
-					short_description="This is a short description"
-					dishes="Pizza, Pasta, Salad"
-					long={-122.43}
-					lat={37.788}
-				/>
-				<RestaurantCard
-					id="343"
-					imgUrl="https://links.papareact.com/gn7"
-					title="testing"
-					rating={4}
-					genre="Italian"
-					address="123 Main St"
-					short_description="This is a short description"
-					dishes="Pizza, Pasta, Salad"
-					long={-122.43}
-					lat={37.788}
-				/>
-				<RestaurantCard
-					id="343"
-					imgUrl="https://links.papareact.com/gn7"
-					title="testing"
-					rating={4}
-					genre="Italian"
-					address="123 Main St"
-					short_description="This is a short description"
-					dishes="Pizza, Pasta, Salad"
-					long={-122.43}
-					lat={37.788}
-				/>
-				<RestaurantCard
-					id="343"
-					imgUrl="https://links.papareact.com/gn7"
-					title="testing"
-					rating={4}
-					genre="Italian"
-					address="123 Main St"
-					short_description="This is a short description"
-					dishes="Pizza, Pasta, Salad"
-					long={-122.43}
-					lat={37.788}
-				/>
-				<RestaurantCard
-					id="343"
-					imgUrl="https://links.papareact.com/gn7"
-					title="testing"
-					rating={4}
-					genre="Italian"
-					address="123 Main St"
-					short_description="This is a short description"
-					dishes="Pizza, Pasta, Salad"
-					long={-122.43}
-					lat={37.788}
-				/>
-				<RestaurantCard
-					id="343"
-					imgUrl="https://links.papareact.com/gn7"
-					title="testing"
-					rating={4}
-					genre="Italian"
-					address="123 Main St"
-					short_description="This is a short description"
-					dishes="Pizza, Pasta, Salad"
-					long={-122.43}
-					lat={37.788}
-				/>
+				{restaurants.map((restaurant) => (
+					<RestaurantCard
+						key={restaurant._id}
+						id={restaurant._id}
+						title={restaurant.name}
+						short_description={restaurant.short_description}
+						imgUrl={restaurant.image}
+						rating={restaurant.rating}
+						genre={restaurant.type.name}
+						address={restaurant.address}
+						long={restaurant.long}
+						lat={restaurant.lat}
+						dishes="Pizza, Pasta, Salad"
+					/>
+				))}
 			</ScrollView>
 		</View>
 	);
