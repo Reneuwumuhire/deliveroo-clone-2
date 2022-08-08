@@ -3,8 +3,32 @@ import { EvilIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import Currency from "react-currency-formatter";
 import { urlFor } from "../sanity";
+import { useDispatch, useSelector } from "react-redux";
+import {
+	addToBasket,
+	removeFromBasket,
+	selectBasketItemsWithId,
+} from "../features/basketSlice";
 const DishRow = ({ id, name, description, image, price }) => {
 	const [isPressed, setIsPressed] = useState(false);
+	const items = useSelector((state) => selectBasketItemsWithId(state, id));
+	const dispatch = useDispatch();
+	const addItemToBasket = () => {
+		dispatch(
+			addToBasket({
+				id,
+				name,
+				description,
+				price,
+				image,
+			}),
+		);
+	};
+	const removeItemFromBasket = () => {
+		if (!items.length > 0) return;
+		dispatch(removeFromBasket({ id }));
+	};
+
 	return (
 		<>
 			<TouchableOpacity
@@ -37,11 +61,15 @@ const DishRow = ({ id, name, description, image, price }) => {
 			{isPressed ? (
 				<View className="bg-white px-4">
 					<View className="flex-row items-center space-x-2 pb-3">
-						<TouchableOpacity>
-							<EvilIcons name="minus" size={24} color="#00CCBB" />
+						<TouchableOpacity onPress={removeItemFromBasket}>
+							<EvilIcons
+								name="minus"
+								size={24}
+								color={`${items.length > 0 ? "#00CCBB" : "gray"}`}
+							/>
 						</TouchableOpacity>
-						<Text>0</Text>
-						<TouchableOpacity>
+						<Text>{items.length}</Text>
+						<TouchableOpacity onPress={addItemToBasket}>
 							<EvilIcons name="plus" size={24} color="#00CCBB" />
 						</TouchableOpacity>
 					</View>
