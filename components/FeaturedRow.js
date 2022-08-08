@@ -56,7 +56,7 @@ const FeaturedRow = ({ id, title, description }) => {
 						address={restaurant.address}
 						long={restaurant.long}
 						lat={restaurant.lat}
-						dishes="Pizza, Pasta, Salad"
+						dishes={restaurant.dishes}
 					/>
 				))}
 			</ScrollView>
